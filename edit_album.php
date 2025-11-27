@@ -1,61 +1,102 @@
 <?php
-session_start();
-include "config.php";
+include 'config.php';
 
-if(!isset($_SESSION['UserID'])) header("Location: login.php");
-
-$id  = $_GET['id'];
-$uid = $_SESSION['UserID'];
-
-// Ambil data album
-$alb = mysqli_fetch_array(mysqli_query($koneksi,
-    "SELECT * FROM album WHERE AlbumID='$id'"
-));
-
-// Cek apakah album milik user
-if($alb['UserID'] != $uid){
-    echo "<script>alert('Anda tidak memiliki izin untuk mengedit album ini'); window.location='album.php';</script>";
-    exit;
+// ----------------------
+// VALIDASI ID ALBUM
+// ----------------------
+if (!isset($_GET['id'])) {
+    die("ID album tidak ditemukan!");
 }
 
-if(isset($_POST['update'])){
-    $nama = $_POST['nama'];
-    $desk = $_POST['deskripsi'];
+$id = $_GET['id'];
 
-    mysqli_query($koneksi,
-        "UPDATE album SET NamaAlbum='$nama', Deskripsi='$desk' 
-         WHERE AlbumID='$id'"
+// ----------------------
+// AMBIL DATA ALBUM DARI DATABASE
+// ----------------------
+$query = mysqli_query($koneksi, "SELECT * FROM album WHERE AlbumID = '$id'");
+$alb = mysqli_fetch_assoc($query);
+
+if (!$alb) {
+    die("Data album tidak ditemukan!");
+}
+
+// ----------------------
+// UPDATE DATA ALBUM
+// ----------------------
+if (isset($_POST['update'])) {
+    $nama = $_POST['nama'];
+    $deskripsi = $_POST['deskripsi'];
+
+    $update = mysqli_query($conn, 
+        "UPDATE album SET 
+            NamaAlbum = '$nama',
+            Deskripsi = '$deskripsi'
+        WHERE AlbumID = '$id'"
     );
 
-    header("Location: view_album.php?id=$id");
-    exit;
+    if ($update) {
+        echo "<script>alert('Album berhasil diperbarui!'); window.location='album.php';</script>";
+    } else {
+        echo "<script>alert('Gagal memperbarui album!');</script>";
+    }
 }
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Edit Album</title>
-
-<style>
-body { font-family: Arial; padding: 20px; }
-input, textarea { width: 300px; padding: 10px; margin-bottom: 10px; }
-button { padding: 10px; cursor: pointer; }
-</style>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Album</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body>
 
-<h2>Edit Album</h2>
+<body class="min-h-screen bg-[#F8F4EC] p-6 text-[#43334C]">
 
-<form method="post">
+    <!-- BACK BUTTON -->
+    <a href="album.php" 
+       class="inline-block mb-6 text-[#E83C91] font-semibold hover:underline">
+         Kembali ke Album
+    </a>
 
-    <input name="nama" value="<?= $alb['NamaAlbum']; ?>" required><br>
+    <div class="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg border border-[#43334C] p-8">
 
-    <textarea name="deskripsi"><?= $alb['Deskripsi']; ?></textarea><br>
+        <h1 class="text-3xl font-bold mb-6 text-[#43334C]">Edit Album</h1>
 
-    <button name="update">Simpan Perubahan</button>
-</form>
+        <!-- FORM -->
+        <form method="post" class="space-y-6">
+
+            <!-- Nama Album -->
+            <div>
+                <label class="block font-semibold mb-1">Nama Album</label>
+                <input type="text" name="nama" 
+                       value="<?= $alb['NamaAlbum']; ?>" required
+                       class="w-full p-3 rounded-xl border border-[#43334C] 
+                              focus:outline-none focus:ring-2 focus:ring-[#E83C91]" />
+            </div>
+
+            <!-- Deskripsi -->
+            <div>
+                <label class="block font-semibold mb-1">Deskripsi</label>
+                <textarea name="deskripsi"
+                          class="w-full h-32 p-3 rounded-xl border border-[#43334C] 
+                                 focus:outline-none focus:ring-2 focus:ring-[#E83C91]"><?= $alb['Deskripsi']; ?></textarea>
+            </div>
+
+            <!-- Button -->
+            <button name="update"
+                class="px-6 py-3 rounded-xl bg-[#E83C91] text-white font-semibold 
+                       hover:bg-[#FF8FB7] transition-all hover:scale-105 active:scale-95 shadow">
+                Simpan Perubahan
+            </button>
+        </form>
+
+    </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
 
 </body>
 </html>
