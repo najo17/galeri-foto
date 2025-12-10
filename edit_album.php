@@ -11,9 +11,9 @@ if (!isset($_GET['id'])) {
 $id = $_GET['id'];
 
 // ----------------------
-// AMBIL DATA ALBUM DARI DATABASE
+// AMBIL DATA ALBUM
 // ----------------------
-$query = mysqli_query($koneksi, "SELECT * FROM album WHERE AlbumID = '$id'");
+$query = mysqli_query($koneksi, "SELECT * FROM album WHERE AlbumID='$id'");
 $alb = mysqli_fetch_assoc($query);
 
 if (!$alb) {
@@ -21,13 +21,14 @@ if (!$alb) {
 }
 
 // ----------------------
-// UPDATE DATA ALBUM
+// PROSES UPDATE
 // ----------------------
 if (isset($_POST['update'])) {
     $nama = $_POST['nama'];
     $deskripsi = $_POST['deskripsi'];
 
-    $update = mysqli_query($conn, 
+    // ✅ Perbaikan di sini (pakai $koneksi)
+    $update = mysqli_query($koneksi, 
         "UPDATE album SET 
             NamaAlbum = '$nama',
             Deskripsi = '$deskripsi'
@@ -35,7 +36,10 @@ if (isset($_POST['update'])) {
     );
 
     if ($update) {
-        echo "<script>alert('Album berhasil diperbarui!'); window.location='album.php';</script>";
+        echo "<script>
+            alert('Album berhasil diperbarui!');
+            window.location='album.php';
+        </script>";
     } else {
         echo "<script>alert('Gagal memperbarui album!');</script>";
     }
@@ -57,7 +61,7 @@ if (isset($_POST['update'])) {
     <!-- BACK BUTTON -->
     <a href="album.php" 
        class="inline-block mb-6 text-[#E83C91] font-semibold hover:underline">
-         Kembali ke Album
+         ⬅ Kembali ke Album
     </a>
 
     <div class="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg border border-[#43334C] p-8">
