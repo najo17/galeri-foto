@@ -1,17 +1,32 @@
 <?php
+// Memulai session
 session_start();
+
+// Menghubungkan ke database
 include "config.php";
 
-// Cek login
+// ----------------------
+// CEK APAKAH USER SUDAH LOGIN
+// ----------------------
 if(!isset($_SESSION['UserID'])) {
+    // Jika belum login, arahkan ke halaman login
     header("Location: login.php");
     exit;
 }
 
+// ----------------------
+// AMBIL DATA DARI SESSION & URL
+// ----------------------
+
+// Ambil ID foto dari parameter URL
 $id = $_GET['id'];
+
+// Ambil UserID dari session
 $uid = $_SESSION['UserID'];
 
-// Ambil data foto
+// ----------------------
+// AMBIL DATA FOTO DARI DATABASE
+// ----------------------
 $qFoto = mysqli_query($koneksi, "SELECT * FROM foto WHERE FotoID='$id'");
 $f = mysqli_fetch_array($qFoto);
 
@@ -21,22 +36,33 @@ if(!$f){
     exit;
 }
 
-// Cek kepemilikan foto
+// ----------------------
+// CEK KEPEMILIKAN FOTO
+// ----------------------
 if($f['UserID'] != $uid){
+    // Jika foto bukan milik user yang sedang login
     echo "<script>alert('Anda tidak memiliki izin untuk menghapus foto ini'); window.location='home.php';</script>";
     exit;
 }
 
-// Hapus komentar yang terkait dengan foto
+// ----------------------
+// PROSES PENGHAPUSAN DATA TERKAIT
+// ----------------------
+
+// Hapus semua komentar yang terkait dengan foto ini
 mysqli_query($koneksi, "DELETE FROM komentarfoto WHERE FotoID='$id'");
 
-// Hapus like foto (jika tabel likefoto ada)
+// Hapus semua data like pada foto ini (jika tabel likefoto ada)
 mysqli_query($koneksi, "DELETE FROM likefoto WHERE FotoID='$id'");
 
-// Hapus foto
+// Hapus data foto dari database
 mysqli_query($koneksi, "DELETE FROM foto WHERE FotoID='$id'");
 
-// Redirect
+// ----------------------
+// REDIRECT KE HALAMAN HOME
+// ----------------------
+
+// Setelah berhasil menghapus, arahkan kembali ke home
 header("Location: home.php");
 exit;
 ?>
